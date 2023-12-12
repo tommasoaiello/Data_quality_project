@@ -1,9 +1,9 @@
 import pandas as pd
-
-from A_data_collection import make_dataset_for_classification, make_dataset_for_regression, make_dataset_for_clustering
-from D_data_analysis import classification, clustering, regression
+import numpy as np
+from A_data_collection import make_dataset_for_classification
+from D_data_analysis import classification
 from E_plot_results import plot
-
+from generate_correlated_features import inject_correlated_feature
 # DEFAULT PARAMETERS FOR CLASSIFICATION, REGRESSION & CLUSTERING
 # N.B. CAN BE CHANGED ACCORDING TO THE ASSIGNMENT GUIDELINES & THE DATA QUALITY ISSUE TO BE INJECTED
 #X, y = make_dataset_for_classification(n_samples=1000, n_features=5, n_informative=5, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=2, weights=None, flip_y=0.01, class_sep=1.0, hypercube=True, seed=2023)
@@ -20,11 +20,12 @@ SEED = 2023
 if __name__ == '__main__':
 
     print("Main ...")
+    
 
+    #print("Experiment 1: One more feature, increasing correlation")
     # A: DATA COLLECTION
     # X, y = make_dataset_for_classification(+ parameters)
-    # X, y = make_dataset_for_regression(+ parameters)
-    # X = make_dataset_for_clustering(+ parameters)
+    
 
     # B: DATA POLLUTION
     # YOUR POLLUTION FUNCTION (on the generated datasets)
@@ -68,22 +69,35 @@ if __name__ == '__main__':
         print('qui')
         results_single_algorithm = []
 
-        for i in range(0, 10): # SECOND CICLE ON THE NUMBER OF POLLUTED DATASET THAT YOU WANT TO CREATE WITH DIFFERENT % OF POLLUTION
-            # DATA COLLECTION
-            X, y = make_dataset_for_classification(n_samples=1000+i, n_features=5, n_informative=5, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=2, weights=None, flip_y=0.01, class_sep=1.0, hypercube=True, seed=2023)
+        correlation_strength = 0.5
 
+        X, y = make_dataset_for_classification(n_samples=1000, n_features=7, n_informative=7, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=2, weights=None, flip_y=0.01, class_sep=1.0, hypercube=True, seed=2023)
+        results_base_analysis = classification(X, y, algorithm, SEED)
+        results_single_algorithm.append(results_base_analysis)
+
+        for i in range(0, 6): # SECOND CICLE ON THE NUMBER OF POLLUTED DATASET THAT YOU WANT TO CREATE WITH DIFFERENT % OF POLLUTION
+            # DATA COLLECTION: this is going to be eliminated
+            #X, y = make_dataset_for_classification(n_samples=1000, n_features=7, n_informative=7, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=2, weights=None, flip_y=0.01, class_sep=1.0, hypercube=True, seed=2023)
+
+            #Data pollution
+            
+            existing_feature_index = 0  # Choose the existing feature with which you want to correlate
+            correlation_strength = correlation_strength + i*0.1  # Adjust the correlation strength
+            
+            X_with_new_feature = inject_correlated_feature(X, existing_feature_index, correlation_strength)
             # DATA ANALYSIS
+            
 
-            results_1_analysis = classification(X, y, algorithm, SEED)
+            results_1_analysis = classification(X_with_new_feature, y, algorithm, SEED)
             results_single_algorithm.append(results_1_analysis)
 
         results_for_each_algorithm.append(results_single_algorithm)
 
     # RESULTS EVALUATION
     #EXAMPLE FOR USING THE SCRIPTS TO PLOT THE RESULTS
-    plot(x_axis_values=[1000,1001,1002,1003,1004,1005,1006,1007,1008,1009], x_label="Number of samples", results=results_for_each_algorithm, title="1 Plot trial classification perf", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="performance")
-    plot(x_axis_values=[1000,1001,1002,1003,1004,1005,1006,1007,1008,1009], x_label="Number of samples", results=results_for_each_algorithm, title="2 Plot trial classification dist", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="distance train-test")
-    plot(x_axis_values=[1000,1001,1002,1003,1004,1005,1006,1007,1008,1009], x_label="Number of samples", results=results_for_each_algorithm, title="3 Plot trial classification speed", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="speed")
+    plot(x_axis_values=[0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], x_label="Correlation values", results=results_for_each_algorithm, title="1 Plot trial classification perf", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="performance")
+    plot(x_axis_values=[0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], x_label="Correlation values", results=results_for_each_algorithm, title="2 Plot trial classification dist", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="distance train-test")
+    plot(x_axis_values=[0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], x_label="Correlation values", results=results_for_each_algorithm, title="3 Plot trial classification speed", algorithms=CLASSIFICATION_ALGORITHMS, plot_type="speed")
 
 
 
