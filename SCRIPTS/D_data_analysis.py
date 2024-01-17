@@ -19,6 +19,7 @@ import pandas as pd
 
 @ignore_warnings(category=ConvergenceWarning)
 def classification(X, y, classifier, seed):
+    #you could include also categorical encoding
     X = StandardScaler().fit_transform(X)
     X = np.nan_to_num(X)
     clf = DecisionTreeClassifier()
